@@ -1,0 +1,12 @@
+.DS_Store
+*~
+[#].[#]
+.[#]*
+*[#]
+*.pyc
+*.pdf
+*.zip
+*.xlsx
+pdf/*
+var/*
+data/*
