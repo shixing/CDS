@@ -31,7 +31,8 @@ def test():
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
     config_path = sys.argv[1]
     config = get_config(config_path)
-    sa = config.get('test','test_data')
+    #sa = config.get('test','test_data'
+    sa = config.get('path','short_abstracts')
     sentences = MySentences(sa)
     myw2v = MyWord2Vec()
     myw2v.train(sentences,config)
