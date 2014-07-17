@@ -26,13 +26,14 @@ class MyWord2Vec:
         # A is to B as C is to D
         question_words = config.get('path','question_words')
         self.model.accuracy(question_words)
-        
+
+
 def test():
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
     config_path = sys.argv[1]
     config = get_config(config_path)
     #sa = config.get('test','test_data'
-    sa = config.get('path','short_abstracts')
+    sa = config.get('word2vec','text_file')
     sentences = MySentences(sa)
     myw2v = MyWord2Vec()
     myw2v.train(sentences,config)

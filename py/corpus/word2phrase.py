@@ -140,7 +140,7 @@ def main():
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
     config_fn = sys.argv[1]
     config = get_config(config_fn)
-    ftext = config.get('path','short_abstracts')
+    ftext = config.get('path','short_abstracts_text')
     fpos = config.get('path','short_abstracts_pos')
     fdict = ftext + '.phrase.dict'
     fphrase = ftext + '.phrase'
@@ -154,5 +154,5 @@ def main():
 
 
 if __name__ == '__main__':
-    test_pos_tagging()
-#    main()
+#    test_pos_tagging()
+    main()

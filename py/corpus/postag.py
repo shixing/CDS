@@ -87,8 +87,8 @@ def main():
         # loading configs;
         config = get_config(sys.argv[1])
         nthread = config.getint('pos','nthread')
-        #datafile = config.get('path','short_abstracts')
-        datafile = config.get('test','test_data')
+        datafile = config.get('path','short_abstracts')
+        #datafile = config.get('test','test_data')
         nworkers = nthread - 1
 
         closed_workers = 0
