@@ -17,15 +17,26 @@ class MyWord2Vec:
     def save(self,config):
         model_path = config.get('word2vec','model_path')
         self.model.save(model_path)
-        
+
     def load(self,config):
         model_path = config.get('word2vec','model_path')
         self.model = gensim.models.Word2Vec.load(model_path)
+        self.model.init_sims(replace = True)
 
     def evaluate_ABCD(self,config):
         # A is to B as C is to D
+        logging.info('Evaluation ABCD')
         question_words = config.get('path','question_words')
         self.model.accuracy(question_words)
+        
+    def getNorm(self,query):
+        if query in self.model.vocab:
+            vacab = self.model.vocab[query]
+            idx = vacab.index
+            return self.model.syn0norm[idx]
+        else:
+            return None
+
 
 
 def test():
@@ -37,7 +48,10 @@ def test():
     sentences = MySentences(sa)
     myw2v = MyWord2Vec()
     myw2v.train(sentences,config)
+    myw2v.evaluate_ABCD(config)
     myw2v.save(config)
+    #myw2v.load(config)
+    
     
 
 

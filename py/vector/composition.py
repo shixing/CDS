@@ -29,9 +29,9 @@ class Composition:
             vw = ll[1]
             p,u,v = None,None,None;
             try:
-                p = model[pw]
-                u = model[uw]
-                v = model[vw]
+                p = model.getNorm(pw)
+                u = model.getNorm(uw)
+                v = model.getNorm(vw)
             except Exception as e:
                 #print e
                 logging.info("{} {} {}".format(pw,uw,vw))
@@ -59,6 +59,7 @@ class Composition:
         # use self.uvm self.pm to calculate self.wrm
         # wrm = matrix of W_R
         # rm = matrix of residuals
+        # pm: N by d uvm: N by 2d wrm: d by 2d;
         logging.info("Training Composition Matrix W_R")
         wrm, rm, _ , _= np.linalg.lstsq(self.uvm,self.pm)
         self.wrm = wrm.T
@@ -77,15 +78,31 @@ class Composition:
         logging.info("Saving UV({})".format(model_path+'.uvm.npy'))
         np.save(model_path+'.pm.npy',self.pm)
         logging.info("Saving P({})".format(model_path+'.pm.npy'))
+        
+    def load_1(self):
+        model_path = self.config.get('composition','model_path')
+        self.load_1_by_path(model_path)
 
+    def load_1_by_path(self,model_path):
+        logging.info("Loading composition model: WRM")
+        self.wrm = np.load(model_path+'.wrm.npy')
 
-    def load(self,model_path):
+    def load_5(self):
+        model_path = self.config.get('composition','model_path')
+        self.load_4_by_path(model_path)
+        fnDict = self.config.get('path','short_abstracts_text') + '.phrase.dict'
+        self.phrases = []
+        fDict = open(fnDict)
+        for line in fDict:
+            line = line.strip()
+            self.phrases.append(line)
+
+    def load_4_by_path(self,model_path):
         logging.info("Loading models")
         self.wrm = np.load(model_path+'.wrm.npy')
         self.rm = np.load(model_path+'.rm.npy')
         self.uvm = np.load(model_path+'.uvm.npy')
         self.pm = np.load(model_path+'.pm.npy')
-
 
 
 
@@ -99,12 +116,12 @@ class Composition:
         myWord2Vec = MyWord2Vec()
         myWord2Vec.load(self.config)
         
-        self.load_data(fnDict,N,myWord2Vec.model)
+        self.load_data(fnDict,N,myWord2Vec)
         self.train()
         self.save(model_composition_path)
         
         end = datetime.datetime.now()        
-        logging.info("{}".format(start-end))
+        logging.info("{}".format(end-start))
 
 
 def main():
