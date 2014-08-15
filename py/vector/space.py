@@ -40,33 +40,33 @@ class Space:
         return self.matrix2[index]
 
     def load_space_from_config(self,config):
-        self.__load_external_variable(config)
+        self._load_external_variable(config)
         
         fq = config.getint('space','filter_frequency')
         if fq == 1:
-            self.__filter_wordlist(config)
+            self._filter_wordlist(config)
 
-        self.__build_matrix(config)
-        self.__add_index_to_matrix()
+        self._build_matrix(config)
+        self._add_index_to_matrix()
     
     def build_space_from_config(self,config):
-        self.__load_external_variable(config)
+        self._load_external_variable(config)
 
         fq = config.getint('space','filter_frequency')
         if fq == 1:
-            self.__filter_wordlist(config)
+            self._filter_wordlist(config)
 
-        self.__build_matrix(config)
-        self.__add_index_to_matrix()
+        self._build_matrix(config)
+        self._add_index_to_matrix()
     
     def save_space_from_config(self,config):
-        self.__save_matrix(config)
+        self._save_matrix(config)
 
-    def __add_index_to_matrix(self):
+    def _add_index_to_matrix(self):
         self.wordlist = [self.wordlist1,self.wordlist2]
         self.matrix = [self.matrix1,self.matrix2]
 
-    def __load_external_variable(self,config):
+    def _load_external_variable(self,config):
         w2v = MyWord2Vec()
         w2v.load(config)
         wordlist1_path = config.get('path','adj_words')
@@ -82,40 +82,41 @@ class Space:
         self.wordlist1 = wordlist1
         self.wordlist2 = wordlist2
         self.composition_matrix = com.wrm
+        self.dimension = self.w2v.model.layer1_size
 
-    def __save_matrix(self,config):
+    def _save_matrix(self,config):
         logging.info("Saving Space")
         path = config.get('space','model_path')
         # matirx1 matrix2 kd_side kd_tree
         np.save(path+'.matrix1.npy',self.matrix1)
         np.save(path+'.matrix2.npy',self.matrix2)
 
-    def __load_matrix(self,config):
+    def _load_matrix(self,config):
         path = config.get('space','model_path')
         logging.info("Loading Space: Matrix1")
         self.matrix1 = np.load(path + '.matrix1.npy')
         logging.info("Loading Space: Matrix2")
         self.matrix2 = np.load(path + '.matrix2.npy')
 
-    def __filter_wordlist(self,config):
+    def _filter_wordlist(self,config):
         topn = config.getint('space','topn')
         logging.info('Filter wordlist1 to get top {} words'.format(topn))
         self.wordlist1.filter_frequency(self.w2v,topn)
         logging.info('Filter wordlist2 to get top {} words'.format(topn))
         self.wordlist2.filter_frequency(self.w2v,topn)
 
-    def __build_matrix(self,config):
+    def _build_matrix(self,config):
         s = np.shape(self.composition_matrix)
         half = s[1] / 2
         # matrix that has already transfered
         logging.info("Building Space: Building Matrix1")
-        self.matrix1 = self.__list2matrix(self.wordlist1,self.w2v,self.composition_matrix[:,:half])
+        self.matrix1 = self._list2matrix(self.wordlist1,self.w2v,self.composition_matrix[:,:half])
         logging.info("Building Space: Building Matrix2")
-        self.matrix2 = self.__list2matrix(self.wordlist2,self.w2v,self.composition_matrix[:,half:])
+        self.matrix2 = self._list2matrix(self.wordlist2,self.w2v,self.composition_matrix[:,half:])
         assert(np.shape(self.matrix1)[0] == len(self.wordlist1.words))
         assert(np.shape(self.matrix2)[0] == len(self.wordlist2.words))
         
-    def __list2matrix(self,wordlist,word_vector,composition_matrix):
+    def _list2matrix(self,wordlist,word_vector,composition_matrix):
         matrix = np.zeros((len(wordlist.words),word_vector.model.layer1_size))
         i = 0
         for word in wordlist.words:

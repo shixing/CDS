@@ -12,16 +12,13 @@ from nearpy.hashes import RandomDiscretizedProjections
 from nearpy.filters.nearestfilter import NearestFilter
 from nearpy.distances.angular import AngularDistance
 
+from vector.engine2 import PermuteEngine
 from utils.config import get_config
 from utils.heap import FixSizeHeap
 from corpus.wordCollect import WordList
 from vector.word2vec import MyWord2Vec
 from vector.composition import Composition
 from vector.space import Space
-
-
-
-
 
 class LSH(Space):
     # need to run Space first to have the matrix1 and matrix2 ready
@@ -51,7 +48,7 @@ class LSH(Space):
         # Create a random binary hash with 10 bits
         rbp = RandomBinaryProjections('rbp', num_bit)
         # Create engine with pipeline configuration
-        engine = Engine(dimension, lshashes=[rbp])
+        engine = PermuteEngine(dimension, lshashes=[rbp])
 
         for index in range(n):
             v = matrix[index]
@@ -90,7 +87,7 @@ class LSH(Space):
         # Create a random binary hash with 10 bits
         rdp = RandomDiscretizedProjections('rdp',projection_count,bin_width)
         # Create engine with pipeline configuration
-        engine = Engine(dimension, lshashes=[rdp])
+        engine = PermuteEngine(dimension, lshashes=[rdp])
         
         # Index 1000000 random vectors (set their data to a unique string)
         for index in range(n):
@@ -134,6 +131,8 @@ class LSH(Space):
 
     def query2_word(self,query_word,k):
         # return 2 decomposed words
+        # [(dis,(adj,noun))]
+
         logging.info("Quering word: {}".format(query_word))
 
         query_vector = self.w2v.getNorm(query_word)
