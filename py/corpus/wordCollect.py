@@ -10,6 +10,11 @@ from vector.word2vec import MyWord2Vec
 
 class WordList:
     
+    def build_index(self):
+        self.index = {}
+        for i,word in enumerate(self.words):
+            self.index[word] = i
+
     def filter(self,w2v):
         new_words = []
         for word in self.words:

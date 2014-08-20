@@ -28,15 +28,15 @@ class Space:
 
     def get_transfer_vec(self,word,idx):
         # idx = 0 or 1
-        index = self.wordlist[idx].words.index(word)
+        index = self.wordlist[idx].index[word]
         return self.matrix[idx][index]
 
     def get_transfer_vec1(self,word):
-        index = self.wordlist1.words.index(word)
+        index = self.wordlist1.index[word]
         return self.matrix1[index]
 
     def get_transfer_vec2(self,word):
-        index = self.wordlist2.words.index(word)
+        index = self.wordlist2.index[word]
         return self.matrix2[index]
 
     def load_space_from_config(self,config):
@@ -72,9 +72,11 @@ class Space:
         wordlist1_path = config.get('path','adj_words')
         wordlist1 = WordList()
         wordlist1.load(wordlist1_path)
+        wordlist1.build_index()
         wordlist2_path = config.get('path','noun_words')
         wordlist2 = WordList()
         wordlist2.load(wordlist2_path)
+        wordlist2.build_index()
         com = Composition(config)
         com.load_1()
 
@@ -137,7 +139,14 @@ class Space:
         topn = np.argsort(dists)[::-1]
         return topn,dists
         
-    
+    def compose2(self,w1,w2):
+        # compose two words
+        if w1 in self.wordlist1.index and w2 in self.wordlist2.index:
+            v1 = self.get_transfer_vec1(w1)
+            v2 = self.get_transfer_vec2(w2)
+            return v1 + v2
+        else:
+            return None
     
     
 

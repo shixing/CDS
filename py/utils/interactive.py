@@ -17,6 +17,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 config = get_config('../config/mac.cfg')
 lsh2gram = vector.LSH2gram.LSH2gram()
 lsh2gram.load_from_config_light(config)
+lsh2gram.engine_2gram.build_permute_index(200,10,500)
 ana = exp.analysis.Analysis()
 
 #### ####

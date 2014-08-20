@@ -25,11 +25,12 @@ class LSH2gram(LSH):
     def load_from_config_light(self,config, debug = False):
         # just load the matrix
         self._load_external_variable(config)
+        
+        self._load_matrix(config)
 
-        logging.info('LSH2gram: Loading wordlist_2gram')
-        fn = config.get('path','bigram_adj_noun_final')
-        self.wordlist_2gram = WordList()
-        self.wordlist_2gram.load(fn)
+        self._load_wordlist_2gram(config)
+
+        
 
         logging.info('LSH2gram: Loading matrix_2gram')
         fn_matrix_2gram = config.get('lsh2gram','matrix_2gram')
@@ -38,14 +39,16 @@ class LSH2gram(LSH):
         logging.info('LSH2gram: Building Engine_2gram')
         # build the index
         num_bit = config.getint('lsh2gram','num_bit')
-        self._build_index_2gram(num_bit)
 
+        self._build_index_2gram(num_bit)
         self._add_index_to_matrix()
 
 
     def build_from_config(self,config):
         self._load_external_variable(config)
         
+        self._load_matrix(config)
+
         self._load_wordlist_2gram(config)
         
         self._build_matrix_2gram(config)
@@ -53,8 +56,8 @@ class LSH2gram(LSH):
         logging.info('LSH2gram: Building Engine_2gram')
         # build the index
         num_bit = config.getint('LSH2gram','num_bit')
+
         self._build_index_2gram(num_bit)
-        
         self._add_index_to_matrix()
     
         
@@ -111,19 +114,28 @@ class LSH2gram(LSH):
         f2gram = config.get('path','bigram_adj_noun')
         self.wordlist_2gram = WordList()
         self.wordlist_2gram.load(f2gram)
+        self.wordlist_2gram.build_index()
 
 
     def _build_index_2gram(self,num_bit):
         self.engine_2gram = self._build_rbp_engine(self.matrix_2gram,num_bit)
 
-        
-    def query2_word(self,query_word,k,naive = False):
+
+    def query_2_2(self,qw1,qw2,k,naive = False):
+        logging.info("Quering words: {} {}".format(qw1,qw2))
+        query_vector = self.compose2(qw1,qw2)
+        return self.query_1_2_v(query_vector,k,naive)
+
+    def query_1_2(self,query_word,k,naive = False):
+        logging.info("Quering word: {}".format(query_word))
+        query_vector = self.w2v.getNorm(query_word)
+        return self.query_1_2_v(query_vector,k,naive)
+
+    def query_1_2_v(self,query_vector,k,naive = False):
+        # input 1 word
         # return 2 decomposed words
         # [(dis,(adj,noun))]
 
-        logging.info("Quering word: {}".format(query_word))
-
-        query_vector = self.w2v.getNorm(query_word)
         if query_vector == None:
             return None
         
