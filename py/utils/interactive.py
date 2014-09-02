@@ -3,6 +3,7 @@ from vector.bruteForce import BruteForceSearch
 from utils.config import get_config
 import vector.LSH
 import vector.LSH2gram
+import vector.LSH_sumbeam
 import logging
 import exp.analysis
 from nearpy.distances.angular import AngularDistance
@@ -12,14 +13,13 @@ def cosd(v1,v2):
     denom = np.linalg.norm(v1,2) * np.linalg.norm(v2,2)
     return d / denom
 
-
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 config = get_config('../config/mac.cfg')
-lsh2gram = vector.LSH2gram.LSH2gram()
-lsh2gram.load_from_config_light(config)
-lsh2gram.engine_2gram.build_permute_index(200,10,500)
-ana = exp.analysis.Analysis()
-
+lsh = vector.LSH_sumbeam.LSH_sumbeam()
+lsh.load_from_config_light(config)
+lsh.build_index_sumbeam(15)
+lsh.build_permute_index(50,50,10)
+lsh.query_1_2("reasoning",10,10)
 #### ####
 import numpy as np
 from vector.engine2 import PermuteEngine

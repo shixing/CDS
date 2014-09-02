@@ -11,6 +11,7 @@ from nearpy.hashes import RandomBinaryProjections
 from nearpy.hashes import RandomDiscretizedProjections
 from nearpy.filters.nearestfilter import NearestFilter
 from nearpy.distances.angular import AngularDistance
+from nearpy.storage import MemoryStorage
 
 from vector.engine2 import PermuteEngine
 from utils.config import get_config
@@ -38,6 +39,22 @@ class LSH(Space):
             self.engine2 = self._build_rbp_engine(self.matrix2,num_bit)
         logging.info("Building LSH Model: Building Index Done")
     
+    def _build_rbp_permute_engine(self,matrix,rbp):
+        # Dimension of our vector space
+        dimension = np.shape(matrix)[1]
+        n = np.shape(matrix)[0]
+        # Create a random binary hash with 10 bits
+
+        # Create engine with pipeline configuration
+        engine = PermuteEngine(dimension, lshashes=[rbp],storage = MemoryStorage())
+
+        for index in range(n):
+            v = matrix[index]
+            engine.store_vector(v, '%d' % index)
+            
+        return engine
+   
+
     def _build_rbp_engine(self,matrix,num_bit):
         engine = self._get_engine()
         if engine != None:
@@ -48,7 +65,7 @@ class LSH(Space):
         # Create a random binary hash with 10 bits
         rbp = RandomBinaryProjections('rbp', num_bit)
         # Create engine with pipeline configuration
-        engine = PermuteEngine(dimension, lshashes=[rbp])
+        engine = PermuteEngine(dimension, lshashes=[rbp],storage = MemoryStorage())
 
         for index in range(n):
             v = matrix[index]

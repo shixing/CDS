@@ -13,7 +13,7 @@ from nearpy.filters.nearestfilter import NearestFilter
 from nearpy.distances.angular import AngularDistance
 
 from vector.LSH import LSH
-from vector.engine import PermuteEngine
+from vector.engine2 import PermuteEngine
 from corpus.wordCollect import WordList
 
 class LSH2gram(LSH):
@@ -29,8 +29,6 @@ class LSH2gram(LSH):
         self._load_matrix(config)
 
         self._load_wordlist_2gram(config)
-
-        
 
         logging.info('LSH2gram: Loading matrix_2gram')
         fn_matrix_2gram = config.get('lsh2gram','matrix_2gram')

@@ -104,8 +104,10 @@ class Space:
         topn = config.getint('space','topn')
         logging.info('Filter wordlist1 to get top {} words'.format(topn))
         self.wordlist1.filter_frequency(self.w2v,topn)
+        self.wordlist1.build_index()
         logging.info('Filter wordlist2 to get top {} words'.format(topn))
         self.wordlist2.filter_frequency(self.w2v,topn)
+        self.wordlist2.build_index()
 
     def _build_matrix(self,config):
         s = np.shape(self.composition_matrix)
@@ -130,6 +132,13 @@ class Space:
         return matrix
     
     # some basic computation
+    def query1_naive_matrix(self,vec,matrix):
+        dt = np.dot(matrix,vec.T)
+        denom = np.linalg.norm(vec,2)*np.sqrt(np.sum(matrix * matrix, axis = 1))
+        dists = dt / denom
+        topn = np.argsort(dists)[::-1]
+        return topn,dists
+        
     def query1_naive(self,vec,idx):
         # search the nearest word in idx-th matrix
         # return the topn list, the index
