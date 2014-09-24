@@ -20,7 +20,10 @@ class MyWord2Vec:
 
     def load(self,config):
         model_path = config.get('word2vec','model_path')
-        self.model = gensim.models.Word2Vec.load(model_path)
+        if model_path.endswith('.bin'):
+            self.model = gensim.models.Word2Vec.load_word2vec_format(model_path,binary=True)
+        else:
+            self.model = gensim.models.Word2Vec.load(model_path)
         self.model.init_sims(replace = True)
 
     def evaluate_ABCD(self,config):

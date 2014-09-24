@@ -7,7 +7,7 @@ class FixSizeHeap:
         self.data = []
 
 
-    def push(self,item): # item should be (key,value)
+    def push(self,item): # item should be (value,key)
         if len(self.data) >= self.size:
             if item > self.data[0]:
                 heapq.heappop(self.data)

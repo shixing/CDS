@@ -66,7 +66,7 @@ class Space:
         self.wordlist = [self.wordlist1,self.wordlist2]
         self.matrix = [self.matrix1,self.matrix2]
 
-    def _load_external_variable(self,config):
+    def _load_external_variable(self,config,composition=True):
         w2v = MyWord2Vec()
         w2v.load(config)
         wordlist1_path = config.get('path','adj_words')
@@ -77,13 +77,14 @@ class Space:
         wordlist2 = WordList()
         wordlist2.load(wordlist2_path)
         wordlist2.build_index()
-        com = Composition(config)
-        com.load_1()
+        if composition:
+            com = Composition(config)
+            com.load_1()
+            self.composition_matrix = com.wrm
 
         self.w2v = w2v
         self.wordlist1 = wordlist1
         self.wordlist2 = wordlist2
-        self.composition_matrix = com.wrm
         self.dimension = self.w2v.model.layer1_size
 
     def _save_matrix(self,config):
@@ -131,6 +132,18 @@ class Space:
         matrix = matrix.T
         return matrix
     
+    def _list2matrix_w2v(self,wordlist,word_vector):
+        # given a wordlist, build a matrix using original word_vector
+        matrix = np.zeros((len(wordlist.words),word_vector.model.layer1_size))
+        i = 0
+        for word in wordlist.words:
+            vector = word_vector.getNorm(word)
+            matrix[i] = vector
+            i+=1
+        return matrix
+        
+    
+
     # some basic computation
     def query1_naive_matrix(self,vec,matrix):
         dt = np.dot(matrix,vec.T)

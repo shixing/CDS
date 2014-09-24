@@ -86,7 +86,7 @@ class PermuteEngine(Engine):
         self.permuted_lists = []
         i = 0
         for p in self.permutations:
-            logging.info('Creating Permutation Index: #{}/{}'.format(i,len(self.permuted_lists)))
+            logging.info('Creating Permutation Index: #{}/{}'.format(i,len(self.permutations)))
             i+=1
             permuted_list = []
             for ba in original_keys:
