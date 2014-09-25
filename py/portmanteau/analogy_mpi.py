@@ -8,7 +8,7 @@ from nearpy.hashes import RandomBinaryProjections
 from utils.heap import FixSizeHeap
 
 from mpi4py import MPI
-from analogy import build_environment,analogy
+from portmanteau.analogy import build_environment,analogy
 
 # Define MPI message tags
 def enum(*sequential, **named):
@@ -41,7 +41,7 @@ if rank == 0:
 
     fout = open(config.get('portmanteau','outpath'),'w')
 
-    num_tasks = 1#len(ports)
+    num_tasks = len(ports)
     task_index = 0
     num_workers = size - 1
     closed_workers = 0
@@ -65,11 +65,13 @@ if rank == 0:
                 fout.write('{} {} {}\n'.format(w1,w2,norm))
                 for dis,w3,w4 in w34s:
                     fout.write('{} {} {}\n'.format(w3,w4,-dis))
+                fout.flush()
             print("Got data from worker %d" % source)
         elif tag == tags.EXIT:
             print("Worker %d exited." % source)
             closed_workers += 1
-            fout.close()
+
+    fout.close()
 
     print("Master finishing")
 
@@ -82,6 +84,10 @@ else:
     config_fn = sys.argv[1]
     config = get_config(config_fn)
     lsh,engine,matrix,wordlist = build_environment(config)
+    naive = False
+    if config.getint('portmanteau','naive') == 1:
+        naive = True
+
     while True:
         comm.send(None, dest=0, tag=tags.READY)
         data = comm.recv(source=0, tag=MPI.ANY_TAG, status=status)
@@ -90,9 +96,12 @@ else:
         if tag == tags.START:
             # Do the work here
             w1,w2 = data
-            result,norm = analogy(w1,w2,lsh,engine,matrix,wordlist)
+            result,norm = analogy(w1,w2,lsh,engine,matrix,wordlist,naive=naive)
+            result = None
+            norm = None
             comm.send((w1,w2,result,norm), dest=0, tag=tags.DONE)
         elif tag == tags.EXIT:
             break
 
     comm.send(None, dest=0, tag=tags.EXIT)
+    

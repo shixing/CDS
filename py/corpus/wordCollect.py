@@ -24,12 +24,16 @@ class WordList:
 
     def filter_frequency(self,w2v,topn):
         def get_count(word):
-            vocab = w2v.model.vocab[word]
-            return vocab.count
+            if word in w2v.model.vocab:
+                vocab = w2v.model.vocab[word]
+                return vocab.count
+            else:
+                return 0
         new_words = []
         for word in self.words:
             count = get_count(word)
-            new_words.append((-count,word))
+            if count > 0:
+                new_words.append((-count,word))
         new_words = sorted(new_words)
         new_words = new_words[:topn]
         new_words = [x[1] for x in new_words]

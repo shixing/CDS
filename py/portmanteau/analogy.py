@@ -30,7 +30,7 @@ def build_environment(config):
     engine = lsh._build_rbp_permute_engine(matrix,rbp)
     num_permutation = 50
     beam_size = 50
-    num_neighbour = 10
+    num_neighbour = 100
     engine.build_permute_index(num_permutation,beam_size,num_neighbour)
     
     return lsh,engine,matrix,wordlist
@@ -39,7 +39,14 @@ def vector_norm(v):
     v = np.array(v)
     return np.sqrt(np.dot(v,v))
 
-def analogy(w1,w2,lsh,engine,matrix,wordlist):
+def analogy(w1,w2,lsh,engine,matrix,wordlist,naive=False):
+    if naive:
+        return analogy_naive(w1,w2,lsh,engine,matrix,wordlist)
+    else:
+        return analogy_lsh(w1,w2,lsh,engine,matrix,wordlist)
+
+def analogy_naive(w1,w2,lsh,engine,matrix,wordlist):
+    n = engine.hamming_beam_size
     vector1 = lsh.w2v.getNorm(w1)
     vector2 = lsh.w2v.getNorm(w2)
     
@@ -50,7 +57,47 @@ def analogy(w1,w2,lsh,engine,matrix,wordlist):
     print vector_norm(vector1)
     print vector_norm(vector2)
     print delta_norm
-    heap = FixSizeHeap(400)
+    heap = FixSizeHeap(1000)
+        
+    j = 0
+    for w3 in wordlist.words:
+        j += 1
+        if j % 1000 == 0:
+            logging.info('Searching: {}/{}'.format(j,len(wordlist.words)))
+
+        idx = wordlist.index[w3]
+        vector3 = matrix[idx,:]
+        vector4 = vector3 + delta
+        topn, dists = lsh.query1_naive_matrix(vector4,matrix)
+        
+        
+        for i in xrange(n):
+            idx = topn[i]
+            dis = 1-dists[idx]
+            w4 = wordlist.words[idx]
+            if w3 == 'previous':
+                print w4,dis
+            if w4 == w2 or w3 == w4:
+                continue
+            else:
+                heap.push((-dis,w3,w4))
+    data = list(set(heap.data))
+    data = sorted(data,key = lambda x:-x[0] )
+    return data,delta_norm
+
+
+def analogy_lsh(w1,w2,lsh,engine,matrix,wordlist):
+    vector1 = lsh.w2v.getNorm(w1)
+    vector2 = lsh.w2v.getNorm(w2)
+    
+    if vector1 == None or vector2 == None:
+        return None
+    delta = vector2-vector1
+    delta_norm = vector_norm(delta)
+    print vector_norm(vector1)
+    print vector_norm(vector2)
+    print delta_norm
+    heap = FixSizeHeap(1000)
         
     j = 0
     for w3 in wordlist.words:

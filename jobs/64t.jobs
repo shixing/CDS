@@ -2,6 +2,7 @@
 #PBS -l nodes=6:ppn=11
 #PBS -l walltime=12:00:00
 
+# pos-tagging the wikipedia corpus
 cd /home/nlg-05/xingshi/workspace/misc/CDS/py
 
 mpiexec python -m corpus.postag /home/nlg-05/xingshi/workspace/misc/CDS/config/hpc.cfg &> /home/nlg-05/xingshi/workspace/misc/CDS/log/64.log.txt
