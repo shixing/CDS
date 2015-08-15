@@ -6,17 +6,21 @@ from utils.config import get_config
 import logging
 from nearpy.hashes import RandomBinaryProjections
 from utils.heap import FixSizeHeap
-
-
+from vector.word2vec import MyWord2Vec
+from vector import objectives
 
 def build_environment(config):
     lsh = LSH_sumbeam()
-    lsh._load_external_variable(config,composition=False)
-    lsh._filter_wordlist(config)
+    w2v = MyWord2Vec()
+    w2v.load(config)
+    lsh.w2v = w2v
 
     # combine top 20k noun and 20k adj into a single wordlist
+    topn = config.getint('space','topn')
+    words = w2v.model.vocab.keys()
     wordlist = WordList()
-    wordlist.words = lsh.wordlist1.words + lsh.wordlist2.words
+    wordlist.words = words
+    wordlist.filter_frequency(w2v,topn)
     wordlist.build_index()
 
     # build a matrix
@@ -39,13 +43,13 @@ def vector_norm(v):
     v = np.array(v)
     return np.sqrt(np.dot(v,v))
 
-def analogy(w1,w2,lsh,engine,matrix,wordlist,naive=False):
-    if naive:
-        return analogy_naive(w1,w2,lsh,engine,matrix,wordlist)
+def analogy(w1,w2,lsh,engine,matrix,wordlist,naive=0):
+    if naive > 0:
+        return analogy_naive(w1,w2,lsh,engine,matrix,wordlist,naive)
     else:
         return analogy_lsh(w1,w2,lsh,engine,matrix,wordlist)
 
-def analogy_naive(w1,w2,lsh,engine,matrix,wordlist):
+def analogy_naive(w1,w2,lsh,engine,matrix,wordlist,naive):
     n = engine.hamming_beam_size
     vector1 = lsh.w2v.getNorm(w1)
     vector2 = lsh.w2v.getNorm(w2)
@@ -68,19 +72,24 @@ def analogy_naive(w1,w2,lsh,engine,matrix,wordlist):
         idx = wordlist.index[w3]
         vector3 = matrix[idx,:]
         vector4 = vector3 + delta
-        topn, dists = lsh.query1_naive_matrix(vector4,matrix)
+        topn, dists = None,None
+        if naive == 1:
+            topn, dists = objectives.objective1(vector4,matrix)
+        elif naive == 2:
+            topn, dists = objectives.objective2(vector1,vector2,vector3,matrix)
+        elif naive == 3:
+            topn, dists = objectives.objective3(vector1,vector2,vector3,matrix)
         
         
         for i in xrange(n):
             idx = topn[i]
-            dis = 1-dists[idx]
+            dis = dists[idx]
             w4 = wordlist.words[idx]
-            if w3 == 'previous':
-                print w4,dis
+            
             if w4 == w2 or w3 == w4:
                 continue
             else:
-                heap.push((-dis,w3,w4))
+                heap.push((dis,w3,w4))
     data = list(set(heap.data))
     data = sorted(data,key = lambda x:-x[0] )
     return data,delta_norm

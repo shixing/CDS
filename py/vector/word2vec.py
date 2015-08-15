@@ -51,8 +51,8 @@ def test():
     sentences = MySentences(sa)
     myw2v = MyWord2Vec()
     myw2v.train(sentences,config)
-    myw2v.evaluate_ABCD(config)
     myw2v.save(config)
+    myw2v.evaluate_ABCD(config)
     #myw2v.load(config)
     
     
